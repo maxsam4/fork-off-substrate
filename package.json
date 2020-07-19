@@ -1,0 +1,30 @@
+{
+  "name": "fork-off-substrate",
+  "version": "1.0.0",
+  "description": "This script allows bootstrapping a new substrate chain with the current state of a live chain",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxsam4/fork-off-substrate.git"
+  },
+  "keywords": [
+    "substrate",
+    "polkadot",
+    "kusama",
+    "fork"
+  ],
+  "author": "Mudit Gupta <hi@mudit.blog>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maxsam4/fork-off-substrate/issues"
+  },
+  "homepage": "https://github.com/maxsam4/fork-off-substrate#readme",
+  "dependencies": {
+    "@polkadot/api": "^1.24.1",
+    "chalk": "^4.1.0"
+  }
+}
