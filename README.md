@@ -26,7 +26,7 @@ This script allows bootstrapping a new substrate chain with the current state of
 
 6. Either run a full node for your blockchain locally(Recommended) or have an eternal endpoint handy.
 
-7. Run the node
+7. Run the script
     * If using a local node, simply run the script using
 
         ```bash
@@ -49,7 +49,7 @@ This script allows bootstrapping a new substrate chain with the current state of
 
 ## Read more
 
-If you would like to understand how this script works, please read this blog post: TODO :)
+If you would like to understand how this script works, please read this [blog post](https://mudit.blog/fork-substrate-blockchain/)
 
 
 ## Credits
