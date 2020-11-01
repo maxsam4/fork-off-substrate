@@ -65,8 +65,9 @@ async function main() {
   const pairs = await provider.send('state_getPairs', ["0x"]);
   fs.writeFileSync(storagePath, JSON.stringify(pairs));
 
+  const metadata = await api.rpc.state.getMetadata();
   // Populate the prefixes array
-  const modules = JSON.parse(await api.rpc.state.getMetadata()).metadata.V11.modules;
+  const modules = JSON.parse(metadata.asLatest.modules);
   modules.forEach((module) => {
     if (module.storage) {
       if (!skippedModulesPrefix.includes(module.storage.prefix)) {
