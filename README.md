@@ -18,13 +18,13 @@ This script allows bootstrapping a new substrate chain with the current state of
     mkdir data
     ```
 
-3. Copy the executable/binary of your substrate node inside the data folder and rename it to `binary`.
+3. Copy the executable/binary of your substrate based node inside the data folder and rename it to `binary`.
 
-4. Copy the runtime WASM blob of your substrate chain inside the data folder and rename it to `runtime.wasm`. To get the WASM blob, compile your substrate chain and look for `./target/release/wbuild/runtime/runtime.compact.wasm`. If you are forking Polkadot/Kusama/Westend, you can download the WASM blobs from [Polkadot's release page](https://github.com/paritytech/polkadot/releases).
+4. Copy the runtime WASM blob of your substrate based blockchain to the data folder and rename it to `runtime.wasm`. To get the WASM blob, compile your blockchain and look for `./target/release/wbuild/runtime/runtime.compact.wasm`. If you are forking Polkadot/Kusama/Westend, you can download the WASM blobs from [Polkadot's release page](https://github.com/paritytech/polkadot/releases).
 
 5. If your substrate chain uses additional custom types than what are available in polkadot.js, define them in a JSON file of format `{ "types": "{ <YOUR_TYPES> }" }`. Copy the file to the `data` folder and rename it to `schema.json`.
 
-6. Either run a full node for your blockchain locally(Recommended) or have an eternal endpoint handy.
+6. Either run a full node for your blockchain locally(Recommended) or have an external endpoint handy.
 
 7. Run the script
     * If using a local node, simply run the script using

@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const cliProgress = require('cli-progress');
+require("dotenv").config();
 const { ApiPromise } = require('@polkadot/api');
 const { HttpProvider } = require('@polkadot/rpc-provider');
 const { xxhashAsHex } = require('@polkadot/util-crypto');
@@ -16,6 +18,13 @@ const storagePath = path.join(__dirname, 'data', 'storage.json');
 
 // Using http endpoint since substrate's Ws endpoint has a size limit.
 const provider = new HttpProvider(process.env.HTTP_RPC_ENDPOINT || 'http://localhost:9933')
+// The storage download will be split into 256^chunksLevel chunks.
+const chunksLevel = process.env.FORK_CHUNKS_LEVEL || 1;
+const totalChunks = Math.pow(256, chunksLevel);
+
+let chunksFetched = 0;
+let separator = false;
+const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 /**
  * All module prefixes except those mentioned in the skippedModulesPrefix will be added to this by the script.
@@ -60,10 +69,19 @@ async function main() {
     });
   }
 
-  // Download state of original chain
-  console.log(chalk.green('Fetching current state of the live chain. Please wait, it can take a while depending on the size of your chain.'));
-  const pairs = await provider.send('state_getPairs', ["0x"]);
-  fs.writeFileSync(storagePath, JSON.stringify(pairs));
+  if (fs.existsSync(storagePath)) {
+    console.log(chalk.yellow('Reusing cached storage. Delete ./data/storage.json and rerun the script if you want to fetch latest storage'));
+  } else {
+    // Download state of original chain
+    console.log(chalk.green('Fetching current state of the live chain. Please wait, it can take a while depending on the size of your chain.'));
+    progressBar.start(totalChunks, 0);
+    const stream = fs.createWriteStream(storagePath, { flags: 'a' });
+    stream.write("[");
+    await fetchChunks("0x", chunksLevel, stream);
+    stream.write("]");
+    stream.end();
+    progressBar.stop();
+  }
 
   const metadata = await api.rpc.state.getMetadata();
   // Populate the prefixes array
@@ -110,3 +128,28 @@ async function main() {
 }
 
 main();
+
+async function fetchChunks(prefix, levelsRemaining, stream) {
+  if (levelsRemaining <= 0) {
+    const pairs = await provider.send('state_getPairs', [prefix]);
+    if (pairs.length > 0) {
+      separator?stream.write(","):separator = true;
+      stream.write(JSON.stringify(pairs).slice(1,-1));
+    }
+    progressBar.update(++chunksFetched);
+    return;
+  }
+
+  // Async fetch the last level
+  if (levelsRemaining == 1) {
+    let promises = [];
+    for (let i = 0; i < 256; i++) {
+      promises.push(fetchChunks(prefix + i.toString(16).padStart(2*chunksLevel, "0"), levelsRemaining - 1, stream));
+    }
+    await Promise.all(promises);
+  } else {
+    for (let i = 0; i < 256; i++) {
+      await fetchChunks(prefix + i.toString(16).padStart(2*chunksLevel, "0"), levelsRemaining - 1, stream);
+    }
+  }
+}
