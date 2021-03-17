@@ -141,7 +141,7 @@ async function fetchChunks(prefix, levelsRemaining, stream) {
   }
 
   // Async fetch the last level
-  if (levelsRemaining == 1) {
+  if (process.env.QUICK_MODE && levelsRemaining == 1) {
     let promises = [];
     for (let i = 0; i < 256; i++) {
       promises.push(fetchChunks(prefix + i.toString(16).padStart(2*chunksLevel, "0"), levelsRemaining - 1, stream));
