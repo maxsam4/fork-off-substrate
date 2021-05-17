@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/maxsam4/fork-off-substrate#readme",
   "dependencies": {
-    "@polkadot/api": "^4.9.2",
+    "@polkadot/api": "^4.10.1",
     "chalk": "^4.1.1",
     "cli-progress": "^3.9.0",
     "dotenv": "^9.0.2"
