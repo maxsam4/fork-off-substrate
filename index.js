@@ -144,12 +144,12 @@ async function fetchChunks(prefix, levelsRemaining, stream) {
   if (process.env.QUICK_MODE && levelsRemaining == 1) {
     let promises = [];
     for (let i = 0; i < 256; i++) {
-      promises.push(fetchChunks(prefix + i.toString(16).padStart(2 * chunksLevel, "0"), levelsRemaining - 1, stream));
+      promises.push(fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream));
     }
     await Promise.all(promises);
   } else {
     for (let i = 0; i < 256; i++) {
-      await fetchChunks(prefix + i.toString(16).padStart(2 * chunksLevel, "0"), levelsRemaining - 1, stream);
+      await fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream);
     }
   }
 }
