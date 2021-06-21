@@ -40,7 +40,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
  * e.g. console.log(xxhashAsHex('System', 128)).
  */
 let prefixes = ['0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9' /* System.Account */];
-const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker'];
+const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship'];
 
 async function main() {
   if (!fs.existsSync(binaryPath)) {
@@ -133,8 +133,8 @@ async function fetchChunks(prefix, levelsRemaining, stream) {
   if (levelsRemaining <= 0) {
     const pairs = await provider.send('state_getPairs', [prefix]);
     if (pairs.length > 0) {
-      separator?stream.write(","):separator = true;
-      stream.write(JSON.stringify(pairs).slice(1,-1));
+      separator ? stream.write(",") : separator = true;
+      stream.write(JSON.stringify(pairs).slice(1, -1));
     }
     progressBar.update(++chunksFetched);
     return;
