@@ -22,6 +22,8 @@ const provider = new HttpProvider(process.env.HTTP_RPC_ENDPOINT || 'http://local
 const chunksLevel = process.env.FORK_CHUNKS_LEVEL || 1;
 const totalChunks = Math.pow(256, chunksLevel);
 
+const chain = process.env.CHAIN || ''
+
 let chunksFetched = 0;
 let separator = false;
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
@@ -95,8 +97,13 @@ async function main() {
   });
 
   // Generate chain spec for original and forked chains
-  execSync(binaryPath + ' build-spec --raw > ' + originalSpecPath);
-  execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
+  if (chain === '') {
+    execSync(binaryPath + ' build-spec --raw > ' + originalSpecPath);
+    execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
+  } else {
+	execSync(binaryPath + ' build-spec' + ' --chain ' + chain + ' --raw > ' + originalSpecPath);
+	execSync(binaryPath + ' build-spec' + ' --chain ' + chain + '-dev' + ' --raw > ' + forkedSpecPath);
+  }
 
   let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
   let originalSpec = JSON.parse(fs.readFileSync(originalSpecPath, 'utf8'));
