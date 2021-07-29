@@ -95,7 +95,7 @@ async function main() {
   });
 
   // Generate chain spec for original and forked chains
-  execSync(binaryPath + ' build-spec --raw > ' + originalSpecPath);
+  execSync(binaryPath + ' build-spec --chain alphanet --raw > ' + originalSpecPath);
   execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
 
   let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
