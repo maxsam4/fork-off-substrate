@@ -39,12 +39,16 @@ This script allows bootstrapping a new substrate chain with the current state of
         HTTP_RPC_ENDPOINT=https://example.com npm start -- --chain <desired_chain>
         ```
 
+    * You can also specify a desired block to scrape data from using `--block <block_hash>`. It may be necessary to pull this from an archive node if the block is old.
+
 8. You should have the genesis file for the forked chain inside the `data` folder. It will be called `fork.json`.
 
 9. You can now run a new chain using this genesis file
 
+    *NOTE*: most necessary tweaks are handled by the script, but for Moonbeam or Moonriver it will be necessary to manually replace an existing collator with alices' address (`0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac`).
+
     ```bash
-    ./binary --chain fork.json --alice
+    ./binary --chain fork.json --alice --sealing 1000
     ```
 
 ## Read more
