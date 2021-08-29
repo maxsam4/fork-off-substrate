@@ -125,6 +125,14 @@ async function main(argv) {
   // To prevent the validator set from changing mid-test, set Staking.ForceEra to ForceNone ('0x02')
   forkedSpec.genesis.raw.top['0x5f3e4907f716ac89b6347d15ececedcaf7dad0317324aecae8744b87fc95f2f3'] = '0x02';
 
+  // Adjust HostConfiguration so that validationUpgradeFrequency and validationUpgradeDelay are 1 each
+  forkedSpec.genesis.raw.top['0x45323df7cc47150b3930e2666b0aa313c522231880238a0c56021b8744a00743'] = '0x0000a000005000000a00000000c8000000c800000a0000000a0000000100000001000000';
+
+  // Set council and technical committee to Alice only
+  forkedSpec.genesis.raw.top['0x11f3ba2e1cdd6d62f2ff9b5589e7ff81ba7fb8745735dc3be2a2c61a72c39e78'] = '0x04f24ff3a9cf04c71dbc94d0b566f7a27b94566cac';
+  forkedSpec.genesis.raw.top['0x8985776095addd4789fccbce8ca77b23ba7fb8745735dc3be2a2c61a72c39e78'] = '0x04f24ff3a9cf04c71dbc94d0b566f7a27b94566cac';
+  
+
   fs.writeFileSync(forkedSpecPath, JSON.stringify(forkedSpec, null, 4));
 
   console.log('Forked genesis generated successfully. Find it at ./data/fork.json');
