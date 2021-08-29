@@ -30,13 +30,13 @@ This script allows bootstrapping a new substrate chain with the current state of
     * If using a local node, simply run the script using
 
         ```bash
-        npm start
+        npm start -- --chain <desired_chain>
         ```
 
     * If you are using an external/non-default endpoint, you need to provide it to the script via the `HTTP_RPC_ENDPOINT` environment variable
 
         ```bash
-        HTTP_RPC_ENDPOINT=https://example.com npm start
+        HTTP_RPC_ENDPOINT=https://example.com npm start -- --chain <desired_chain>
         ```
 
 8. You should have the genesis file for the forked chain inside the `data` folder. It will be called `fork.json`.

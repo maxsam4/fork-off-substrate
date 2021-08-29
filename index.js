@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const cliProgress = require('cli-progress');
+const yargs = require('yargs/yargs');
+const { hideBin } = require('yargs/helpers')
 require("dotenv").config();
 const { ApiPromise } = require('@polkadot/api');
 const { HttpProvider } = require('@polkadot/rpc-provider');
@@ -42,7 +44,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
 let prefixes = ['0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9' /* System.Account */];
 const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship'];
 
-async function main() {
+async function main(argv) {
   if (!fs.existsSync(binaryPath)) {
     console.log(chalk.red('Binary missing. Please copy the binary of your substrate node to the data folder and rename the binary to "binary"'));
     process.exit(1);
@@ -95,8 +97,10 @@ async function main() {
   });
 
   // Generate chain spec for original and forked chains
-  execSync(binaryPath + ' build-spec --chain alphanet --raw > ' + originalSpecPath);
-  execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
+  // execSync(binaryPath + ' build-spec --chain alphanet --raw > ' + originalSpecPath);
+  execSync(`${binaryPath} build-spec --chain ${argv.chain} --raw > ${originalSpecPath}`);
+  // execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
+  execSync(`${binaryPath} build-spec --dev --raw > ${forkedSpecPath}`);
 
   let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
   let originalSpec = JSON.parse(fs.readFileSync(originalSpecPath, 'utf8'));
@@ -127,7 +131,16 @@ async function main() {
   process.exit();
 }
 
-main();
+const argv = yargs(hideBin(process.argv))
+  .option('chain', {
+    type: 'string',
+    description: 'chain to specify when building spec',
+  })
+  .demandOption(['chain'], 'Please specify which chain to use.')
+  .help()
+  .argv;
+
+main(argv);
 
 async function fetchChunks(prefix, levelsRemaining, stream) {
   if (levelsRemaining <= 0) {
