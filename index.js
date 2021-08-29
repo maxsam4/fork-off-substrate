@@ -132,6 +132,8 @@ async function main(argv) {
   forkedSpec.genesis.raw.top['0x11f3ba2e1cdd6d62f2ff9b5589e7ff81ba7fb8745735dc3be2a2c61a72c39e78'] = '0x04f24ff3a9cf04c71dbc94d0b566f7a27b94566cac';
   forkedSpec.genesis.raw.top['0x8985776095addd4789fccbce8ca77b23ba7fb8745735dc3be2a2c61a72c39e78'] = '0x04f24ff3a9cf04c71dbc94d0b566f7a27b94566cac';
   
+  // Set eligibility to 0x64
+  forkedSpec.genesis.raw.top['0x76310ee24dbd609d21d08ad7292757d0e48df801946c7a0cc54f1a4e51592741'] = '0x64';
 
   fs.writeFileSync(forkedSpecPath, JSON.stringify(forkedSpec, null, 4));
 
