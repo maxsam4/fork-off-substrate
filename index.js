@@ -76,10 +76,13 @@ async function main(argv) {
   } else {
     // Download state of original chain
     console.log(chalk.green('Fetching current state of the live chain. Please wait, it can take a while depending on the size of your chain.'));
+    if (argv.block) {
+      console.log(chalk.yellow(`Using specified block: ${argv.block}`));
+    }
     progressBar.start(totalChunks, 0);
     const stream = fs.createWriteStream(storagePath, { flags: 'a' });
     stream.write("[");
-    await fetchChunks("0x", chunksLevel, stream);
+    await fetchChunks("0x", argv.block, chunksLevel, stream);
     stream.write("]");
     stream.end();
     progressBar.stop();
@@ -97,9 +100,7 @@ async function main(argv) {
   });
 
   // Generate chain spec for original and forked chains
-  // execSync(binaryPath + ' build-spec --chain alphanet --raw > ' + originalSpecPath);
   execSync(`${binaryPath} build-spec --chain ${argv.chain} --raw > ${originalSpecPath}`);
-  // execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
   execSync(`${binaryPath} build-spec --dev --raw > ${forkedSpecPath}`);
 
   let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
@@ -136,15 +137,19 @@ const argv = yargs(hideBin(process.argv))
     type: 'string',
     description: 'chain to specify when building spec',
   })
+  .option('block', {
+    type: 'string',
+    description: 'hash of desired block',
+  })
   .demandOption(['chain'], 'Please specify which chain to use.')
   .help()
   .argv;
 
 main(argv);
 
-async function fetchChunks(prefix, levelsRemaining, stream) {
+async function fetchChunks(prefix, block, levelsRemaining, stream) {
   if (levelsRemaining <= 0) {
-    const pairs = await provider.send('state_getPairs', [prefix]);
+    const pairs = await provider.send('state_getPairs', [prefix, block]);
     if (pairs.length > 0) {
       separator ? stream.write(",") : separator = true;
       stream.write(JSON.stringify(pairs).slice(1, -1));
@@ -157,12 +162,12 @@ async function fetchChunks(prefix, levelsRemaining, stream) {
   if (process.env.QUICK_MODE && levelsRemaining == 1) {
     let promises = [];
     for (let i = 0; i < 256; i++) {
-      promises.push(fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream));
+      promises.push(fetchChunks(prefix + i.toString(16).padStart(2, "0"), block, levelsRemaining - 1, stream));
     }
     await Promise.all(promises);
   } else {
     for (let i = 0; i < 256; i++) {
-      await fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream);
+      await fetchChunks(prefix + i.toString(16).padStart(2, "0"), block, levelsRemaining - 1, stream);
     }
   }
 }
