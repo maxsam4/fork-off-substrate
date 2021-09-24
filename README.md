@@ -51,6 +51,20 @@ This script allows bootstrapping a new substrate chain with the current state of
 
 If you would like to understand how this script works, please read this [blog post](https://mudit.blog/fork-substrate-blockchain/)
 
+## Using Docker
+
+### Build the image
+
+    docker build -t fork-off-substrate .
+
+### Run
+
+    BINARY=/full/path/to/your/binary
+    HTTP_RPC_ENDPOINT=http://localhost:9933
+    docker run --rm -it \
+        -e HTTP_RPC_ENDPOINT=$HTTP_RPC_ENDPOINT \
+        -v "$BINARY":/data/binary
+        fork-off-substrate
 
 ## Credits
 
