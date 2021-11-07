@@ -47,6 +47,17 @@ This script allows bootstrapping a new substrate chain with the current state of
     ./binary --chain fork.json --alice
     ```
 
+## Configuration
+
+The script can be tweaked and configured using various environment variables -
+
+| Environment Variable | Effects | Default value |
+| --- | --- | --- |
+| HTTP_RPC_ENDPOINT | HTTP RPC endpoint that should be used to query state | http://localhost:9933 |
+| FORK_CHUNKS_LEVEL | Determines how many chunks to split the RPC download in. Effect is exponential, recommended value for most is 1. You can try 0 for small chains and 2 for large chains for potential speed improvements | 1 |
+| CHAIN | Chain to use as base for the forked chain. Default  | dev |
+| ALICE | If set, the script will replace the chain's sudo account with `//Alice` | `NULL` |
+
 ## Read more
 
 If you would like to understand how this script works, please read this [blog post](https://mudit.blog/fork-substrate-blockchain/)
