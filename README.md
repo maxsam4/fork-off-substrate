@@ -57,6 +57,7 @@ The script can be tweaked and configured using various environment variables -
 | FORK_CHUNKS_LEVEL | Determines how many chunks to split the RPC download in. Effect is exponential, recommended value for most is 1. You can try 0 for small chains and 2 for large chains for potential speed improvements | 1 |
 | CHAIN | Chain to use as base for the forked chain. Default  | dev |
 | ALICE | If set, the script will replace the chain's sudo account with `//Alice` | `NULL` |
+| QUICK_MODE | If set, it parallelizes the data download from the RPC endpoint | `NULL` | 
 
 ## Read more
 
