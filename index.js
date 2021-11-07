@@ -102,8 +102,8 @@ async function main() {
     execSync(binaryPath + ' build-spec --raw > ' + originalSpecPath);
     execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
   } else {
-	execSync(binaryPath + ' build-spec' + ' --chain ' + chain + ' --raw > ' + originalSpecPath);
-	execSync(binaryPath + ' build-spec' + ' --chain ' + chain + '-dev' + ' --raw > ' + forkedSpecPath);
+    execSync(binaryPath + ' build-spec' + ' --chain ' + chain + ' --raw > ' + originalSpecPath);
+    execSync(binaryPath + ' build-spec' + ' --chain ' + chain + '-dev' + ' --raw > ' + forkedSpecPath);
   }
 
   let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
