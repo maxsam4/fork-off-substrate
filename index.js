@@ -22,8 +22,9 @@ const provider = new HttpProvider(process.env.HTTP_RPC_ENDPOINT || 'http://local
 const chunksLevel = process.env.FORK_CHUNKS_LEVEL || 1;
 const totalChunks = Math.pow(256, chunksLevel);
 
-const chain = process.env.CHAIN || ''
 const alice = process.env.ALICE || ''
+const originalChain = process.env.ORIG_CHAIN || '';
+const forkChain = process.env.FORK_CHAIN || '';
 
 let chunksFetched = 0;
 let separator = false;
@@ -44,6 +45,15 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
  */
 let prefixes = ['0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9' /* System.Account */];
 const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship'];
+
+async function fixParachinStates (api, forkedSpec) {
+  const skippedKeys = [
+    api.query.parasScheduler.sessionStartBlock.key()
+  ];
+  for (const k of skippedKeys) {
+    delete forkedSpec.genesis.raw.top[k];
+  }
+}
 
 async function main() {
   if (!fs.existsSync(binaryPath)) {
@@ -77,10 +87,11 @@ async function main() {
   } else {
     // Download state of original chain
     console.log(chalk.green('Fetching current state of the live chain. Please wait, it can take a while depending on the size of your chain.'));
+    let at = (await api.rpc.chain.getBlockHash()).toString();
     progressBar.start(totalChunks, 0);
     const stream = fs.createWriteStream(storagePath, { flags: 'a' });
     stream.write("[");
-    await fetchChunks("0x", chunksLevel, stream);
+    await fetchChunks("0x", chunksLevel, stream, at);
     stream.write("]");
     stream.end();
     progressBar.stop();
@@ -98,12 +109,15 @@ async function main() {
   });
 
   // Generate chain spec for original and forked chains
-  if (chain === '') {
-    execSync(binaryPath + ' build-spec --raw > ' + originalSpecPath);
-    execSync(binaryPath + ' build-spec --dev --raw > ' + forkedSpecPath);
+  if (originalChain == '') {
+    execSync(binaryPath + ` build-spec --raw > ` + originalSpecPath);
   } else {
-    execSync(binaryPath + ' build-spec' + ' --chain ' + chain + ' --raw > ' + originalSpecPath);
-    execSync(binaryPath + ' build-spec' + ' --chain ' + chain + '-dev' + ' --raw > ' + forkedSpecPath);
+    execSync(binaryPath + ` build-spec --chain ${originalChain} --raw > ` + originalSpecPath);
+  }
+  if (forkChain == '') {
+    execSync(binaryPath + ` build-spec --dev --raw > ` + forkedSpecPath);
+  } else {
+    execSync(binaryPath + ` build-spec --chain ${forkChain} --raw > ` + forkedSpecPath);
   }
 
   let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
@@ -122,6 +136,8 @@ async function main() {
 
   // Delete System.LastRuntimeUpgrade to ensure that the on_runtime_upgrade event is triggered
   delete forkedSpec.genesis.raw.top['0x26aa394eea5630e07c48ae0c9558cef7f9cce9c888469bb1a0dceaa129672ef8'];
+
+  fixParachinStates(api, forkedSpec);
 
   // Set the code to the current runtime code
   forkedSpec.genesis.raw.top['0x3a636f6465'] = '0x' + fs.readFileSync(hexPath, 'utf8').trim();
@@ -142,9 +158,9 @@ async function main() {
 
 main();
 
-async function fetchChunks(prefix, levelsRemaining, stream) {
+async function fetchChunks(prefix, levelsRemaining, stream, at) {
   if (levelsRemaining <= 0) {
-    const pairs = await provider.send('state_getPairs', [prefix]);
+    const pairs = await provider.send('state_getPairs', [prefix, at]);
     if (pairs.length > 0) {
       separator ? stream.write(",") : separator = true;
       stream.write(JSON.stringify(pairs).slice(1, -1));
@@ -157,12 +173,12 @@ async function fetchChunks(prefix, levelsRemaining, stream) {
   if (process.env.QUICK_MODE && levelsRemaining == 1) {
     let promises = [];
     for (let i = 0; i < 256; i++) {
-      promises.push(fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream));
+      promises.push(fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream, at));
     }
     await Promise.all(promises);
   } else {
     for (let i = 0; i < 256; i++) {
-      await fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream);
+      await fetchChunks(prefix + i.toString(16).padStart(2, "0"), levelsRemaining - 1, stream, at);
     }
   }
 }
