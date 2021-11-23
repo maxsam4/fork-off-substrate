@@ -51,10 +51,37 @@ This script allows bootstrapping a new substrate chain with the current state of
     ./binary --chain fork.json --alice --sealing 1000
     ```
 
+## Configuration
+
+The script can be tweaked and configured using various environment variables -
+
+| Environment Variable | Effects | Default value |
+| --- | --- | --- |
+| HTTP_RPC_ENDPOINT | HTTP RPC endpoint that should be used to query state | http://localhost:9933 |
+| FORK_CHUNKS_LEVEL | Determines how many chunks to split the RPC download in. Effect is exponential, recommended value for most is 1. You can try 0 for small chains and 2 for large chains for potential speed improvements | 1 |
+| ORIG_CHAIN | Chain to use as the original chain.  | `$default_of_the_binary` |
+| FORK_CHAIN | Chain to use as base for the forked chain.  | `dev` |
+| ALICE | If set, the script will replace the chain's sudo account with `//Alice` | `NULL` |
+| QUICK_MODE | If set, it parallelizes the data download from the RPC endpoint | `NULL` | 
+
 ## Read more
 
 If you would like to understand how this script works, please read this [blog post](https://mudit.blog/fork-substrate-blockchain/)
 
+## Using Docker
+
+### Build the image
+
+    docker build -t fork-off-substrate .
+
+### Run
+
+    BINARY=/full/path/to/your/linux/binary
+    HTTP_RPC_ENDPOINT=http://localhost:9933
+    docker run --rm -it \
+        -e HTTP_RPC_ENDPOINT=$HTTP_RPC_ENDPOINT \
+        -v "$BINARY":/data/binary
+        fork-off-substrate
 
 ## Credits
 
