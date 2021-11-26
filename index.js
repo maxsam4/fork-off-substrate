@@ -110,7 +110,7 @@ async function main() {
 
   // Generate chain spec for original and forked chains
   if (originalChain == '') {
-    execSync(binaryPath + ` build-spec --dev --raw > ` + originalSpecPath);
+    execSync(binaryPath + ` build-spec --raw > ` + originalSpecPath);
   } else {
     execSync(binaryPath + ` build-spec --chain ${originalChain} --raw > ` + originalSpecPath);
   }
