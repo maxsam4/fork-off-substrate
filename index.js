@@ -99,18 +99,18 @@ async function main() {
 
   const metadata = await api.rpc.state.getMetadata();
   // Populate the prefixes array
-  const modules = JSON.parse(metadata.asLatest.modules);
+  const modules = metadata.asLatest.pallets;
   modules.forEach((module) => {
     if (module.storage) {
-      if (!skippedModulesPrefix.includes(module.storage.prefix)) {
-        prefixes.push(xxhashAsHex(module.storage.prefix, 128));
+      if (!skippedModulesPrefix.includes(module.name)) {
+        prefixes.push(xxhashAsHex(module.name, 128));
       }
     }
   });
 
   // Generate chain spec for original and forked chains
   if (originalChain == '') {
-    execSync(binaryPath + ` build-spec --raw > ` + originalSpecPath);
+    execSync(binaryPath + ` build-spec --dev --raw > ` + originalSpecPath);
   } else {
     execSync(binaryPath + ` build-spec --chain ${originalChain} --raw > ` + originalSpecPath);
   }
