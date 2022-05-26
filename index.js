@@ -43,7 +43,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
  * e.g. console.log(xxhashAsHex('System', 128)).
  */
 let prefixes = ['0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9' /* System.Account */];
-const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship'];
+const skippedModulesPrefix = ['Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship'];
 
 async function main() {
   if (!fs.existsSync(binaryPath)) {
@@ -91,8 +91,10 @@ async function main() {
   const modules = metadata.asLatest.pallets;
   modules.forEach((module) => {
     if (module.storage) {
-      if (!skippedModulesPrefix.includes(module.storage.prefix)) {
-        prefixes.push(xxhashAsHex(module.storage.prefix, 128));
+      if (!skippedModulesPrefix.includes(module.name.toString())) {
+        prefixes.push(xxhashAsHex(module.name, 128));
+      } else {
+        console.log("skipped", module.name);
       }
     }
   });
