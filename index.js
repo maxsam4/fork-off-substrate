@@ -103,7 +103,7 @@ async function main() {
   const modules = metadata.asLatest.pallets;
   modules.forEach((module) => {
     if (module.storage) {
-      if (!skippedModulesPrefix.includes(module.name)) {
+      if (!skippedModulesPrefix.includes(module.name.toString())) {
         prefixes.push(xxhashAsHex(module.name, 128));
       }
     }
