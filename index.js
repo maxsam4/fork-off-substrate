@@ -6,6 +6,7 @@ require("dotenv").config();
 const { ApiPromise } = require('@polkadot/api');
 const { HttpProvider } = require('@polkadot/rpc-provider');
 const { xxhashAsHex } = require('@polkadot/util-crypto');
+const bjson = require('big-json');
 const execFileSync = require('child_process').execFileSync;
 const execSync = require('child_process').execSync;
 const binaryPath = path.join(__dirname, 'data', 'binary');
@@ -48,7 +49,7 @@ const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFi
 
 async function fixParachinStates (api, forkedSpec) {
   const skippedKeys = [
-    api.query.parasScheduler.sessionStartBlock.key()
+    api.query.paraScheduler.sessionStartBlock.key()
   ];
   for (const k of skippedKeys) {
     delete forkedSpec.genesis.raw.top[k];
@@ -120,7 +121,17 @@ async function main() {
     execSync(binaryPath + ` build-spec --chain ${forkChain} --raw > ` + forkedSpecPath);
   }
 
-  let storage = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
+  console.log(chalk.green('Parsing storage'));
+  let storage = await new Promise((resolve, reject) => {
+    fs.createReadStream(storagePath, 'utf8')
+      .pipe(bjson.createParseStream()
+        .on('data', function(data) {
+          resolve(data);
+        })
+        .on('error', function() {
+          reject();
+        }));
+  });
   let originalSpec = JSON.parse(fs.readFileSync(originalSpecPath, 'utf8'));
   let forkedSpec = JSON.parse(fs.readFileSync(forkedSpecPath, 'utf8'));
 
@@ -150,7 +161,14 @@ async function main() {
     forkedSpec.genesis.raw.top['0x5c0d1176a568c1f92944340dbfed9e9c530ebca703c85910e7164cb7d1c9e47b'] = '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d';
   }
 
-  fs.writeFileSync(forkedSpecPath, JSON.stringify(forkedSpec, null, 4));
+  console.log(chalk.green('Writing forked spec (this may take a while)'));
+  await new Promise((resolve, reject) => {
+    bjson.createStringifyStream({ body: forkedSpec })
+      .pipe(fs.createWriteStream(forkedSpecPath)
+        .on('end', function() {
+          resolve();
+        }));
+  });
 
   console.log('Forked genesis generated successfully. Find it at ./data/fork.json');
   process.exit();
