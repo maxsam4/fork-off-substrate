@@ -3,8 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const cliProgress = require('cli-progress');
 require("dotenv").config();
-const { ApiPromise } = require('@polkadot/api');
-const { HttpProvider } = require('@polkadot/rpc-provider');
+const { ApiPromise, WsProvider, HttpProvider } = require('@polkadot/api');
 const { xxhashAsHex } = require('@polkadot/util-crypto');
 const execFileSync = require('child_process').execFileSync;
 const execSync = require('child_process').execSync;
@@ -16,8 +15,8 @@ const originalSpecPath = path.join(__dirname, 'data', 'genesis.json');
 const forkedSpecPath = path.join(__dirname, 'data', 'fork.json');
 const storagePath = path.join(__dirname, 'data', 'storage.json');
 
-// Using http endpoint since substrate's Ws endpoint has a size limit.
-const provider = new HttpProvider(process.env.HTTP_RPC_ENDPOINT || 'http://localhost:9933')
+
+const provider = process.env.WS_RPC_ENDPOINT ? new WsProvider(process.env.WS_RPC_ENDPOINT) : new HttpProvider(process.env.HTTP_RPC_ENDPOINT || 'http://localhost:9933')
 // The storage download will be split into 256^chunksLevel chunks.
 const chunksLevel = process.env.FORK_CHUNKS_LEVEL || 1;
 const totalChunks = Math.pow(256, chunksLevel);
@@ -44,14 +43,24 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
  * e.g. console.log(xxhashAsHex('System', 128)).
  */
 let prefixes = ['0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9' /* System.Account */];
-const skippedModulesPrefix = ['System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship'];
-
-async function fixParachinStates (api, forkedSpec) {
-  const skippedKeys = [
-    api.query.parasScheduler.sessionStartBlock.key()
+const skippedModulesPrefix =
+  [
+    // common relay pallets
+    'System', 'Session', 'Babe', 'Grandpa', 'GrandpaFinality', 'FinalityTracker', 'Authorship',
+    // common parachain pallets
+    'Aura', 'AuraExt', 'CollatorSelection', 'ParachainSystem'
   ];
-  for (const k of skippedKeys) {
-    delete forkedSpec.genesis.raw.top[k];
+
+async function fixParachinStates(api, forkedSpec) {
+  if (process.env.PARACHAIN_MODE != true) {
+    const skippedKeys = [
+      api.query.parasScheduler.sessionStartBlock.key()
+    ];
+    for (const k of skippedKeys) {
+      delete forkedSpec.genesis.raw.top[k];
+    }
+  } else {
+    console.log("forking parachain")
   }
 }
 
@@ -69,7 +78,7 @@ async function main() {
   execSync('cat ' + wasmPath + ' | hexdump -ve \'/1 "%02x"\' > ' + hexPath);
 
   let api;
-  console.log(chalk.green('We are intentionally using the HTTP endpoint. If you see any warnings about that, please ignore them.'));
+  console.log(chalk.green('Suggested use HTTP endpoint(since Substrate Ws endpoint has a size limit). If you see any warnings about that, please ignore them.'));
   if (!fs.existsSync(schemaPath)) {
     console.log(chalk.yellow('Custom Schema missing, using default schema.'));
     api = await ApiPromise.create({ provider });
